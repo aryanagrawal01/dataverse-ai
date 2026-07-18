@@ -62,20 +62,29 @@ def _project_shell(user: UserDTO) -> None:
         state.set_nav_page("projects")
         st.rerun()
         return
-    from dataverse.services import project_service
-    from dataverse.ui.pages_impl import data_health
+    from dataverse.services import pipeline_service, project_service
+    from dataverse.ui.pages_impl import dashboard, data_health
 
     project = project_service.get_project(user.id, project_id)
-    st.subheader(project.name)
-    st.caption(
-        f"{project.row_count:,} rows · {project.column_count} columns · status `{project.status}`"
-    )
+    head_l, head_r = st.columns([5, 1.3])
+    with head_l:
+        st.subheader(project.name)
+        st.caption(
+            f"{project.row_count:,} rows · {project.column_count} columns · "
+            f"status `{project.status}`"
+        )
+    with head_r:
+        st.download_button(
+            "⬇ Download CSV",
+            data=pipeline_service.export_csv(user.id, project_id),
+            file_name=f"{project.name}-cleaned.csv",
+            mime="text/csv",
+            use_container_width=True,
+            help="Cleaned dataset (raw if cleaning hasn't been applied yet)",
+        )
 
     tab_health, tab_dash = st.tabs(["🩺 Data Health", "📊 Dashboard"])
     with tab_health:
         data_health.render(user, project_id)
     with tab_dash:
-        st.info(
-            "Automatic dashboards arrive with the next milestone (M3), right "
-            "after cleaning — so charts are built on trustworthy data."
-        )
+        dashboard.render(user, project_id)
