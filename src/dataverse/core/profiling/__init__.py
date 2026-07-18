@@ -1,0 +1,3 @@
+from dataverse.core.profiling.profiler import profile_dataframe
+
+__all__ = ["profile_dataframe"]
