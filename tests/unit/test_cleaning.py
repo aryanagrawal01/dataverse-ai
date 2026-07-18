@@ -26,19 +26,25 @@ class TestRules:
 
     def test_coerce_numeric_currency(self):
         df = _df(torture.currency_csv())
-        out, affected, detail = cleaning_rules.coerce_type(df, {"column": "price_usd", "target": "numeric"})
+        out, affected, detail = cleaning_rules.coerce_type(
+            df, {"column": "price_usd", "target": "numeric"}
+        )
         assert out["price_usd"].dtype.kind == "f"
         assert out["price_usd"].iloc[0] == pytest.approx(1234.56)
         assert affected == 5
 
     def test_coerce_datetime_counts_invalid(self):
         df = _df(torture.mixed_date_formats_csv())
-        out, _, detail = cleaning_rules.coerce_type(df, {"column": "iso_date", "target": "datetime"})
+        out, _, detail = cleaning_rules.coerce_type(
+            df, {"column": "iso_date", "target": "datetime"}
+        )
         assert str(out["iso_date"].dtype).startswith("datetime64")
 
     def test_coerce_unknown_column_raises(self):
         with pytest.raises(CleaningError):
-            cleaning_rules.coerce_type(_df(torture.clean_sales_csv()), {"column": "ghost", "target": "numeric"})
+            cleaning_rules.coerce_type(
+                _df(torture.clean_sales_csv()), {"column": "ghost", "target": "numeric"}
+            )
 
     def test_impute_median(self):
         df = pd.DataFrame({"v": [1.0, 2.0, None, 100.0, None]})
@@ -49,13 +55,17 @@ class TestRules:
 
     def test_impute_unknown_label(self):
         df = pd.DataFrame({"c": ["a", None, "b", None]})
-        out, affected, _ = cleaning_rules.impute_missing(df, {"column": "c", "strategy": "unknown_label"})
+        out, affected, _ = cleaning_rules.impute_missing(
+            df, {"column": "c", "strategy": "unknown_label"}
+        )
         assert affected == 2
         assert list(out["c"]) == ["a", "Unknown", "b", "Unknown"]
 
     def test_impute_drop_rows(self):
         df = pd.DataFrame({"v": [1.0, None, 3.0], "o": [1, 2, 3]})
-        out, affected, _ = cleaning_rules.impute_missing(df, {"column": "v", "strategy": "drop_rows"})
+        out, affected, _ = cleaning_rules.impute_missing(
+            df, {"column": "v", "strategy": "drop_rows"}
+        )
         assert len(out) == 2
         assert affected == 1
 
@@ -66,20 +76,26 @@ class TestRules:
 
     def test_outlier_cap(self):
         df = _df(torture.outlier_csv())
-        out, affected, _ = cleaning_rules.handle_outliers(df, {"column": "value", "strategy": "cap"})
+        out, affected, _ = cleaning_rules.handle_outliers(
+            df, {"column": "value", "strategy": "cap"}
+        )
         assert affected >= 2
         assert out["value"].max() < 5000
         assert len(out) == len(df)  # capping never drops rows
 
     def test_outlier_remove(self):
         df = _df(torture.outlier_csv())
-        out, affected, _ = cleaning_rules.handle_outliers(df, {"column": "value", "strategy": "remove_rows"})
+        out, affected, _ = cleaning_rules.handle_outliers(
+            df, {"column": "value", "strategy": "remove_rows"}
+        )
         assert len(out) == len(df) - affected
         assert out["value"].max() < 5000
 
     def test_outlier_keep_is_noop(self):
         df = _df(torture.outlier_csv())
-        out, affected, _ = cleaning_rules.handle_outliers(df, {"column": "value", "strategy": "keep"})
+        out, affected, _ = cleaning_rules.handle_outliers(
+            df, {"column": "value", "strategy": "keep"}
+        )
         assert out.equals(df)
         assert affected == 0
 

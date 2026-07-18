@@ -122,6 +122,9 @@ layers = [
     "dataverse.utils",
     "dataverse.config",
 ]
+# Documented exception (ARCHITECTURE.md §13): core depends on the LLMProvider
+# protocol via dependency injection — never on a concrete provider or SDK.
+ignore_imports = ["dataverse.core.** -> dataverse.llm.provider"]
 
 [[tool.importlinter.contracts]]
 name = "core is pure: no DB, no UI, no vendor SDKs"
