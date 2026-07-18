@@ -63,7 +63,7 @@ def _project_shell(user: UserDTO) -> None:
         st.rerun()
         return
     from dataverse.services import pipeline_service, project_service
-    from dataverse.ui.pages_impl import chat, dashboard, data_health, insights
+    from dataverse.ui.pages_impl import chat, dashboard, data_health, forecast, insights, reports
 
     project = project_service.get_project(user.id, project_id)
     head_l, head_r = st.columns([5, 1.3])
@@ -83,8 +83,8 @@ def _project_shell(user: UserDTO) -> None:
             help="Cleaned dataset (raw if cleaning hasn't been applied yet)",
         )
 
-    tab_health, tab_dash, tab_insights, tab_chat = st.tabs(
-        ["🩺 Data Health", "📊 Dashboard", "💡 Insights", "💬 Chat"]
+    tab_health, tab_dash, tab_insights, tab_chat, tab_forecast, tab_reports = st.tabs(
+        ["🩺 Data Health", "📊 Dashboard", "💡 Insights", "💬 Chat", "📈 Forecast", "📄 Reports"]
     )
     with tab_health:
         data_health.render(user, project_id)
@@ -94,3 +94,7 @@ def _project_shell(user: UserDTO) -> None:
         insights.render(user, project_id)
     with tab_chat:
         chat.render(user, project_id)
+    with tab_forecast:
+        forecast.render(user, project_id)
+    with tab_reports:
+        reports.render(user, project_id)

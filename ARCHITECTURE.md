@@ -235,7 +235,7 @@ Requirements use MoSCoW priority. FR-IDs are referenced by the roadmap and test 
 | ID | Requirement | Priority |
 |---|---|---|
 | FR-RPT-1 | PDF export: cover, executive summary, KPIs, charts, insights, recommendations, cleaning appendix | Must |
-| FR-RPT-2 | Charts rendered as static images (Plotly + Kaleido) | Must |
+| FR-RPT-2 | Charts rendered as static images (matplotlib Agg; Kaleido rejected during M5 — see §7) | Must |
 | FR-RPT-3 | PowerPoint export (python-pptx) | Could (v1.1) |
 | FR-RPT-4 | Report generation is async-feeling (progress indicator) | Should |
 
@@ -302,7 +302,7 @@ Every deviation from the suggested stack is justified here, per the brief.
 | Language | **Python 3.12** | As suggested. Entire data/AI ecosystem lives here. |
 | UI | **Streamlit (multipage) + custom theming** | Kept as suggested — it is the right call for a solo-built v1: fastest path to a polished data app, native Plotly/pandas integration. The known trade-off (limited UI control, rerun model) is mitigated by strict service-layer separation so a **FastAPI + Next.js** frontend can replace it in v2 without touching business logic. Building React now would double the timeline for marginal portfolio gain. Trade-off logged in [Section 24](#24-risks-and-trade-offs). |
 | Dataframes | **Pandas 2.x (PyArrow-backed)** | As suggested. Polars considered (faster) but pandas keeps the widest library compatibility (sklearn, statsmodels, Plotly). Revisit if >1M-row files become common. |
-| Charts | **Plotly** (+ **Kaleido** for static export) | As suggested; interactive + exportable. |
+| Charts | **Plotly** (interactive UI) + **matplotlib Agg** (static PDF images) | Plotly as suggested for the UI. **Kaleido rejected during implementation:** its bundled headless Chromium hung intermittently on the dev host (OneDrive-synced paths) — an unacceptable reliability risk for server-side rendering. Matplotlib is pure Python and deterministic. |
 | ML / stats | **scikit-learn + statsmodels** | statsmodels added: Holt-Winters/SARIMA are the correct forecasting tools; sklearn alone lacks them. Prophet rejected (heavy dependency, marginal gain). |
 | Metadata DB | **PostgreSQL (prod) / SQLite (dev)** via **SQLAlchemy 2.0 + Alembic** | As suggested, with SQLite fallback so the repo runs with zero setup. Alembic added for migrations — non-negotiable for a real product. |
 | Dataset storage | **Parquet files on a storage abstraction** (local disk dev, S3-compatible prod) | **Deviation:** datasets do NOT go into Postgres. Storing millions of rows relationally is slow and bloats the DB; Parquet is columnar, compressed, and pandas-native. DB stores metadata + file pointers only. |
