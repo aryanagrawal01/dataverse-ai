@@ -22,11 +22,14 @@ _TYPE_ICON = {
 
 
 def render(user: UserDTO, project_id: str) -> None:
+    from dataverse.ui.components import cleaning_review
+
     profile = pipeline_service.get_stored_profile(user.id, project_id)
     if profile is None:
         with st.spinner("Profiling this dataset…"):
             profile = pipeline_service.profile_project(user.id, project_id)
 
+    cleaning_review.render_result_banner()
     _summary_row(profile)
     st.divider()
 
@@ -35,6 +38,9 @@ def render(user: UserDTO, project_id: str) -> None:
         _issues_panel(profile)
     with right:
         _missing_panel(profile)
+
+    st.divider()
+    cleaning_review.render(user, project_id)
 
     st.divider()
     _columns_table(profile)
@@ -74,7 +80,6 @@ def _issues_panel(profile: DatasetProfile) -> None:
     order = {"high": 0, "medium": 1, "low": 2}
     for issue in sorted(issues, key=lambda i: order[i.severity]):
         st.markdown(f"{_SEVERITY_ICON[issue.severity]} {issue.description}")
-    st.caption("Fixes for these issues arrive on the Cleaning tab (next milestone).")
 
 
 def _missing_panel(profile: DatasetProfile) -> None:

@@ -119,9 +119,7 @@ def constant_column_csv() -> bytes:
 
 
 def boolean_text_csv() -> bytes:
-    return (
-        b"id,active,verified\n1,Yes,true\n2,No,false\n3,Yes,true\n4,No,true\n5,Yes,false\n"
-    )
+    return b"id,active,verified\n1,Yes,true\n2,No,false\n3,Yes,true\n4,No,true\n5,Yes,false\n"
 
 
 def excel_simple(sheets: dict[str, pd.DataFrame] | None = None) -> bytes:
