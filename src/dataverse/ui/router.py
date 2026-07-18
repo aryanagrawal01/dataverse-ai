@@ -56,14 +56,26 @@ def _sidebar(user: UserDTO) -> None:
 
 
 def _project_shell(user: UserDTO) -> None:
-    """Project workspace. Tabs (health, dashboard, …) arrive with M2+."""
+    """Project workspace: tabbed views over one dataset."""
     project_id = state.get_active_project_id()
     if project_id is None:
         state.set_nav_page("projects")
         st.rerun()
         return
     from dataverse.services import project_service
+    from dataverse.ui.pages_impl import data_health
 
     project = project_service.get_project(user.id, project_id)
     st.subheader(project.name)
-    st.info(f"Profiling and dashboards arrive with the next milestone. Status: `{project.status}`.")
+    st.caption(
+        f"{project.row_count:,} rows · {project.column_count} columns · status `{project.status}`"
+    )
+
+    tab_health, tab_dash = st.tabs(["🩺 Data Health", "📊 Dashboard"])
+    with tab_health:
+        data_health.render(user, project_id)
+    with tab_dash:
+        st.info(
+            "Automatic dashboards arrive with the next milestone (M3), right "
+            "after cleaning — so charts are built on trustworthy data."
+        )
