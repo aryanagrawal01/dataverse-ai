@@ -25,7 +25,8 @@ def render(user: UserDTO, project_id: str) -> None:
                         st.rerun()
 
     for msg in messages:
-        with st.chat_message(msg.role, avatar="◆" if msg.role == "assistant" else None):
+        # NOTE: avatar must be a real emoji or image path; "◆" crashes Streamlit.
+        with st.chat_message(msg.role, avatar="🔷" if msg.role == "assistant" else None):
             st.markdown(msg.content)
             if msg.chart is not None:
                 charts.render_chart(msg.chart)
@@ -39,9 +40,11 @@ def render(user: UserDTO, project_id: str) -> None:
     if asked:
         with st.chat_message("user"):
             st.markdown(asked)
-        with st.chat_message("assistant", avatar="◆"), st.spinner("Analyzing…"):
-            try:
+        try:
+            with st.chat_message("assistant", avatar="🔷"), st.spinner("Analyzing…"):
                 chat_service.ask(user.id, project_id, asked)
-            except DataVerseError as exc:
-                st.warning(exc.user_message)
-        st.rerun()
+        except DataVerseError as exc:
+            # No rerun on failure — rerunning would wipe this message.
+            st.warning(exc.user_message)
+        else:
+            st.rerun()
