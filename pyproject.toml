@@ -1,0 +1,138 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dataverse-ai"
+version = "0.1.0"
+description = "AI-powered Business Intelligence platform: upload a spreadsheet, get cleaning, dashboards, insights, forecasts, and chat."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Aryan Agrawal" }]
+
+dependencies = [
+    "streamlit>=1.36,<2",
+    "pandas[performance]>=2.2,<3",
+    "numpy>=1.26,<3",
+    "pyarrow>=16",
+    "plotly>=5.22,<6",
+    "scikit-learn>=1.5,<2",
+    "statsmodels>=0.14,<1",
+    "sqlalchemy>=2.0,<3",
+    "alembic>=1.13,<2",
+    "psycopg2-binary>=2.9,<3",
+    "pydantic>=2.7,<3",
+    "pydantic-settings>=2.3,<3",
+    "passlib>=1.7,<2",
+    "bcrypt>=4.1,<5",
+    "itsdangerous>=2.2,<3",
+    "structlog>=24.1",
+    "openai>=1.35,<3",
+    "openpyxl>=3.1,<4",
+    "xlrd>=2.0,<3",
+    "reportlab>=4.2,<5",
+    "kaleido>=0.2.1,<1",
+    "jinja2>=3.1,<4",
+    "charset-normalizer>=3.3,<4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2",
+    "pytest-cov>=5.0",
+    "hypothesis>=6.100",
+    "ruff>=0.5",
+    "mypy>=1.10",
+    "import-linter>=2.0",
+    "types-passlib",
+    "pandas-stubs",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # bugbear
+    "UP",  # pyupgrade
+    "N",   # pep8-naming
+    "SIM", # simplify
+    "C4",  # comprehensions
+    "RET", # return
+    "PTH", # pathlib
+]
+ignore = [
+    "E501", # line length handled by formatter
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "src"
+packages = ["dataverse"]
+strict_optional = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+check_untyped_defs = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "dataverse.ui.*"
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+markers = [
+    "live_llm: tests that call the real LLM API (excluded from CI)",
+    "slow: performance fixtures",
+]
+filterwarnings = ["ignore::DeprecationWarning:passlib.*"]
+
+[tool.coverage.run]
+source = ["src/dataverse"]
+omit = ["src/dataverse/ui/*"]
+
+[tool.importlinter]
+root_package = "dataverse"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Layer law: ui -> services -> (core|repositories|storage|llm) -> foundations"
+type = "layers"
+layers = [
+    "dataverse.ui",
+    "dataverse.services",
+    "dataverse.core | dataverse.repositories | dataverse.storage | dataverse.llm",
+    "dataverse.schemas | dataverse.models",
+    "dataverse.utils",
+    "dataverse.config",
+]
+
+[[tool.importlinter.contracts]]
+name = "core is pure: no DB, no UI, no vendor SDKs"
+type = "forbidden"
+source_modules = ["dataverse.core"]
+forbidden_modules = [
+    "streamlit",
+    "sqlalchemy",
+    "openai",
+    "dataverse.repositories",
+    "dataverse.models",
+    "dataverse.ui",
+    "dataverse.services",
+]

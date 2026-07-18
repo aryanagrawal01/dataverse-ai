@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: dataverse
+      POSTGRES_PASSWORD: dataverse
+      POSTGRES_DB: dataverse
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dataverse"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: staging
+      DATABASE_URL: postgresql+psycopg2://dataverse:dataverse@db:5432/dataverse
+      STORAGE_BACKEND: local
+      STORAGE_PATH: /app/data/artifacts
+      SECRET_KEY: compose-secret-not-for-prod
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    ports:
+      - "8501:8501"
+    volumes:
+      - appdata:/app/data
+
+volumes:
+  pgdata:
+  appdata:
