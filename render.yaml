@@ -2,9 +2,15 @@
 # together. In the Render dashboard: New -> Blueprint -> select this repo.
 # Render reads this file and creates everything below in one step.
 #
-# Two values are intentionally left for you to fill in after deploy (Render
-# will prompt for them since sync: false): OPENAI_API_KEY is optional — the
-# app runs fully without it, with AI features in degraded/template mode.
+# OPENAI_API_KEY is intentionally left for you to fill in after deploy
+# (Render will prompt for it since sync: false) — the app runs fully
+# without it, with AI features in degraded/template mode.
+#
+# NOTE: no persistent disk on the free plan (Render doesn't support disks on
+# free web services), so uploaded datasets and generated reports live only
+# on the container's ephemeral filesystem and are lost on redeploy/restart.
+# Fine for a demo; upgrade the web service plan and add a `disk:` block back
+# for real persistence, or point STORAGE_BACKEND at S3-compatible storage.
 
 services:
   - type: web
@@ -35,10 +41,6 @@ services:
         value: "0.25"
       - key: OPENAI_API_KEY
         sync: false
-    disk:
-      name: dataverse-data
-      mountPath: /app/data
-      sizeGB: 1
 
 databases:
   - name: dataverse-db
