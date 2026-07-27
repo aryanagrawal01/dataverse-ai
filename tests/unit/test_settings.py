@@ -32,3 +32,10 @@ def test_llm_configured_flag(monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
     get_settings.cache_clear()
     assert get_settings().llm_configured
+
+
+def test_llm_base_url_defaults_empty_and_is_configurable(monkeypatch):
+    assert get_settings().llm_base_url == ""
+    monkeypatch.setenv("LLM_BASE_URL", "https://api.groq.com/openai/v1")
+    get_settings.cache_clear()
+    assert get_settings().llm_base_url == "https://api.groq.com/openai/v1"

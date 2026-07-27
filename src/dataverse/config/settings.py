@@ -46,7 +46,11 @@ class Settings(BaseSettings):
     login_lockout_minutes: int = 15
 
     # --- LLM ---
+    # openai_api_key holds the credential for whichever provider is
+    # configured; llm_base_url lets it point at any OpenAI-compatible API
+    # (e.g. Groq) instead of api.openai.com. Empty = native OpenAI.
     openai_api_key: str = ""
+    llm_base_url: str = ""
     llm_model: str = "gpt-4o-mini"
     llm_budget_usd_per_project: float = 0.25
     llm_timeout_seconds: int = 45
