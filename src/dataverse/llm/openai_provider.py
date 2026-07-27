@@ -1,4 +1,6 @@
-"""OpenAI adapter — the only module in the codebase importing the openai SDK."""
+"""OpenAI-compatible adapter — the only module in the codebase importing the
+openai SDK. Works against any provider speaking the same wire protocol
+(Groq, etc.) via settings.llm_base_url — no per-provider branching needed."""
 
 import time
 
@@ -22,7 +24,11 @@ class OpenAIProvider:
 
         from openai import OpenAI
 
-        self._client = OpenAI(api_key=settings.openai_api_key, timeout=self._timeout)
+        self._client = OpenAI(
+            api_key=settings.openai_api_key,
+            base_url=settings.llm_base_url or None,
+            timeout=self._timeout,
+        )
 
     @property
     def available(self) -> bool:

@@ -4,7 +4,10 @@
 #
 # OPENAI_API_KEY is intentionally left for you to fill in after deploy
 # (Render will prompt for it since sync: false) — the app runs fully
-# without it, with AI features in degraded/template mode.
+# without it, with AI features in degraded/template mode. LLM_BASE_URL
+# points this at Groq's OpenAI-compatible endpoint instead of api.openai.com
+# (see config/settings.py + llm/openai_provider.py) — paste a Groq key
+# (starts gsk_...) into OPENAI_API_KEY, not an actual OpenAI key, to match.
 #
 # DELIBERATELY NO POSTGRES DATABASE HERE: Render's free plan allows only one
 # free Postgres instance per account, and provisioning a second one hangs
@@ -42,7 +45,9 @@ services:
       - key: USER_QUOTA_MB
         value: "500"
       - key: LLM_MODEL
-        value: gpt-4o-mini
+        value: llama-3.3-70b-versatile
+      - key: LLM_BASE_URL
+        value: https://api.groq.com/openai/v1
       - key: LLM_BUDGET_USD_PER_PROJECT
         value: "0.25"
       - key: OPENAI_API_KEY
