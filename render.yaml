@@ -1,16 +1,24 @@
-# Render Blueprint — provisions the web service and its Postgres database
-# together. In the Render dashboard: New -> Blueprint -> select this repo.
-# Render reads this file and creates everything below in one step.
+# Render Blueprint — provisions the dataverse-ai web service. In the Render
+# dashboard: New -> Blueprint -> select this repo. Render reads this file
+# and creates everything below in one step.
 #
 # OPENAI_API_KEY is intentionally left for you to fill in after deploy
 # (Render will prompt for it since sync: false) — the app runs fully
 # without it, with AI features in degraded/template mode.
 #
-# NOTE: no persistent disk on the free plan (Render doesn't support disks on
-# free web services), so uploaded datasets and generated reports live only
-# on the container's ephemeral filesystem and are lost on redeploy/restart.
-# Fine for a demo; upgrade the web service plan and add a `disk:` block back
-# for real persistence, or point STORAGE_BACKEND at S3-compatible storage.
+# DELIBERATELY NO POSTGRES DATABASE HERE: Render's free plan allows only one
+# free Postgres instance per account, and provisioning a second one hangs
+# the blueprint sync with no clear error rather than failing fast. This
+# deployment runs on SQLite instead (ENVIRONMENT=staging, since the app's
+# own prod-mode validation intentionally refuses SQLite in prod — see
+# config/settings.py validate_for_environment()).
+#
+# NOTE: no persistent disk on the free plan either (Render doesn't support
+# disks on free web services), so the SQLite file, uploaded datasets, and
+# generated reports all live on the container's ephemeral filesystem and
+# are lost on redeploy/restart. Fine for a demo; for real persistence,
+# upgrade the plan and add both a `disk:` block and a `databases:` section
+# back with Postgres, or point STORAGE_BACKEND at S3-compatible storage.
 
 services:
   - type: web
@@ -20,13 +28,11 @@ services:
     healthCheckPath: /_stcore/health
     envVars:
       - key: ENVIRONMENT
-        value: prod
+        value: staging
       - key: SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
-        fromDatabase:
-          name: dataverse-db
-          property: connectionString
+        value: sqlite:////app/data/dataverse.db
       - key: STORAGE_BACKEND
         value: local
       - key: STORAGE_PATH
@@ -41,9 +47,3 @@ services:
         value: "0.25"
       - key: OPENAI_API_KEY
         sync: false
-
-databases:
-  - name: dataverse-db
-    plan: free
-    databaseName: dataverse
-    user: dataverse
