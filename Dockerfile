@@ -21,9 +21,12 @@ RUN useradd --create-home appuser && mkdir -p /app/data && chown -R appuser /app
 USER appuser
 
 EXPOSE 8501
+ENV PORT=8501
 
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8501/_stcore/health')"
+    CMD python -c "import os, urllib.request; urllib.request.urlopen(f'http://localhost:{os.environ.get(\"PORT\", 8501)}/_stcore/health')"
 
-# Run migrations, then start the app.
-CMD ["sh", "-c", "alembic upgrade head && streamlit run app.py --server.port=8501 --server.address=0.0.0.0 --server.headless=true"]
+# Run migrations, then start the app. $PORT is honored so this image works
+# unmodified on platforms that inject their own port (Render, Railway, etc.)
+# as well as locally/compose, where it defaults to 8501.
+CMD ["sh", "-c", "alembic upgrade head && streamlit run app.py --server.port=${PORT:-8501} --server.address=0.0.0.0 --server.headless=true"]
