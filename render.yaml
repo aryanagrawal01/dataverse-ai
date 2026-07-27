@@ -1,0 +1,47 @@
+# Render Blueprint — provisions the web service and its Postgres database
+# together. In the Render dashboard: New -> Blueprint -> select this repo.
+# Render reads this file and creates everything below in one step.
+#
+# Two values are intentionally left for you to fill in after deploy (Render
+# will prompt for them since sync: false): OPENAI_API_KEY is optional — the
+# app runs fully without it, with AI features in degraded/template mode.
+
+services:
+  - type: web
+    name: dataverse-ai
+    runtime: docker
+    plan: free
+    healthCheckPath: /_stcore/health
+    envVars:
+      - key: ENVIRONMENT
+        value: prod
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dataverse-db
+          property: connectionString
+      - key: STORAGE_BACKEND
+        value: local
+      - key: STORAGE_PATH
+        value: /app/data/artifacts
+      - key: MAX_UPLOAD_MB
+        value: "100"
+      - key: USER_QUOTA_MB
+        value: "500"
+      - key: LLM_MODEL
+        value: gpt-4o-mini
+      - key: LLM_BUDGET_USD_PER_PROJECT
+        value: "0.25"
+      - key: OPENAI_API_KEY
+        sync: false
+    disk:
+      name: dataverse-data
+      mountPath: /app/data
+      sizeGB: 1
+
+databases:
+  - name: dataverse-db
+    plan: free
+    databaseName: dataverse
+    user: dataverse
